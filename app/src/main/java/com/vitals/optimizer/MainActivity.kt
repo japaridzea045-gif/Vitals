@@ -8,6 +8,7 @@ import android.os.StatFs
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -126,7 +128,7 @@ fun readBattery(context: Context): BatteryStats {
 
 // ---- Per-app storage, with real uninstall -------------------------------
 
-data class AppUsage(val packageName: String, val label: String, val totalBytes: Long, val isSystem: Boolean)
+data class AppUsage(val packageName: String, val label: String, val totalBytes: Long, val isSystem: Boolean, val icon: android.graphics.Bitmap?)
 
 fun hasUsageAccess(context: Context): Boolean {
     val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
@@ -145,6 +147,26 @@ fun openUsageAccessSettings(context: Context) {
     )
 }
 
+fun drawableToBitmap(drawable: android.graphics.drawable.Drawable): android.graphics.Bitmap {
+    if (drawable is android.graphics.drawable.BitmapDrawable && drawable.bitmap != null) {
+        return drawable.bitmap
+    }
+    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 108
+    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 108
+    val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    drawable.setBounds(0, 0, canvas.width, canvas.height)
+    drawable.draw(canvas)
+    return bitmap
+}
+
+fun loadAppIcon(pm: android.content.pm.PackageManager, packageName: String): android.graphics.Bitmap? {
+    return try {
+        drawableToBitmap(pm.getApplicationIcon(packageName))
+    } catch (e: Exception) {
+        null
+    }
+}
 fun listAppStorage(context: Context): List<AppUsage> {
     val pm = context.packageManager
     val ssm = context.getSystemService(Context.STORAGE_STATS_SERVICE) as android.app.usage.StorageStatsManager
@@ -162,6 +184,7 @@ fun listAppStorage(context: Context): List<AppUsage> {
                     label = pm.getApplicationLabel(app).toString(),
                     totalBytes = total,
                     isSystem = isSystem
+                    icon = loadAppIcon(pm, app.packageName)
                 )
             )
         } catch (e: Exception) {
@@ -513,6 +536,23 @@ fun AppRow(app: AppUsage, onUninstall: () -> Unit) {
             .background(SurfaceColor)
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
+        if (app.icon != null) {
+            Image(
+                bitmap = app.icon.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(9.dp))
+            )
+        } else {
+            Box(
+                Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(SurfaceRaised)
+            )
+        }
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(app.label, color = TextPrimary, fontSize = 13.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
             Text(formatBytes(app.totalBytes), color = TextDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
