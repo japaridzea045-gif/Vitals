@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -77,6 +78,8 @@ fun readBattery(context: Context): BatteryStats {
     return BatteryStats(percent = percent, isCharging = charging, temperatureC = 0f)
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VitalsApp(context: Context) {
     var tab by remember { mutableStateOf(0) }
