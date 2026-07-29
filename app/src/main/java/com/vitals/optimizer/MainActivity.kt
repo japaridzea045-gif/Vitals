@@ -509,4 +509,38 @@ fun AppRow(app: AppUsage, onUninstall: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCo
+            .clip(RoundedCornerShape(14.dp))
+            .background(SurfaceColor)
+            .padding(horizontal = 14.dp, vertical = 10.dp)
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(app.label, color = TextPrimary, fontSize = 13.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+            Text(formatBytes(app.totalBytes), color = TextDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+        }
+        if (!app.isSystem) {
+            TextButton(onClick = onUninstall) {
+                Icon(Icons.Filled.Delete, contentDescription = "Uninstall", tint = CritRed, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Uninstall", color = CritRed, fontSize = 12.sp)
+            }
+        } else {
+            Text("System", color = TextDim, fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+fun BatteryTab(stats: BatteryStats, onRefresh: () -> Unit) {
+    StatCard(
+        title = "Battery level",
+        value = "${stats.percent}%",
+        subtitle = if (stats.isCharging) "Charging" else "On battery"
+    )
+    Spacer(Modifier.height(18.dp))
+    ActionButton("Refresh reading", Icons.Filled.Refresh, onRefresh)
+    FootNote(
+        "For real battery savings, Android's built-in Settings → Battery → Battery Saver / " +
+            "Adaptive Battery already restricts background drain per app better than a third-party " +
+            "app is permitted to — apps can no longer force-restrict each other directly."
+    )
+}
