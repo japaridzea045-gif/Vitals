@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Memory
-import androidx.compose.material.icons.filled.Sd
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -155,7 +155,7 @@ fun StorageTab(stats: StorageStats, lastFreedMB: Double?, onClean: () -> Unit) {
     )
     Spacer(Modifier.height(16.dp))
     Button(onClick = onClean, modifier = Modifier.fillMaxWidth()) {
-        Icon(Icons.Filled.Sd, contentDescription = null)
+        Icon(Icons.Filled.Delete, contentDescription = null)
         Spacer(Modifier.width(8.dp))
         Text("Clear this app's cache")
     }
